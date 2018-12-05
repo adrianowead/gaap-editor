@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { ElectronService } from 'ngx-electron';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +8,12 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'gaap-editor';
+
+  constructor(
+    private _electronService: ElectronService
+  ) {}
+
+  startGithub() {
+    this._electronService.shell.openExternal('https://github.com/adrianowead');
+  }
 }
