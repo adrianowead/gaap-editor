@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { ElectronService } from 'ngx-electron';
 
 @Component({
   selector: 'app-root',
@@ -7,13 +6,12 @@ import { ElectronService } from 'ngx-electron';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'gaap-editor';
-
-  constructor(
-    private _electronService: ElectronService
-  ) {}
-
-  startGithub() {
-    this._electronService.shell.openExternal('https://github.com/adrianowead');
+  constructor() {
+    // timeout temporário
+    // @TODO: Futuramente trocar para um processo de checagem de ambiente, arquivos recentes e dependências
+    // para depois direcionar o usuário
+    setTimeout(() => {
+      //
+    }, 3000);
   }
 }
