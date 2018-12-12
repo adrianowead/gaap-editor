@@ -1,0 +1,5 @@
+<div #divContent
+     class="content" 
+     contenteditable="true" 
+     [textContent]="content" 
+     (keyup)="contentChange($event)">{{content}}</div>

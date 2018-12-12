@@ -11,15 +11,16 @@ export class AppComponent {
     private _ngZone: NgZone,
     private _router: Router
   ) {
-    this._router.navigateByUrl('/splash');
+    // this._router.navigateByUrl('/splash');
+    this._router.navigateByUrl('/text-editor');
 
     // timeout temporário
     // @TODO: Futuramente trocar para um processo de checagem de ambiente, arquivos recentes e dependências
     // para depois direcionar o usuário
-    setTimeout(() => {
-      this._ngZone.run(() => {
-        this._router.navigateByUrl('/home');
-      });
-    }, 3000);
+    // setTimeout(() => {
+    //   this._ngZone.run(() => {
+    //     this._router.navigateByUrl('/text-editor');
+    //   });
+    // }, 3000);
   }
 }

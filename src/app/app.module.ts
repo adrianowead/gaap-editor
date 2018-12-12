@@ -8,22 +8,25 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { HomeComponent } from './home/home.component';
 import { SplashScreenComponent } from './splash-screen/splash-screen.component';
+import { TextEditorComponent } from './text-editor/text-editor.component';
 
 const appRoutes = [
   { path: 'splash', component: SplashScreenComponent },
-  { path: 'home', component: HomeComponent }
+  { path: 'home', component: HomeComponent },
+  { path: 'text-editor', component: TextEditorComponent }
 ];
 
 @NgModule({
   declarations: [
     AppComponent,
     HomeComponent,
-    SplashScreenComponent
+    SplashScreenComponent,
+    TextEditorComponent
   ],
   imports: [
     RouterModule.forRoot(
       appRoutes,
-      {enableTracing: true} // for debug only
+      // {enableTracing: true} // for debug only
     ),
     BrowserModule,
     NgxElectronModule,
