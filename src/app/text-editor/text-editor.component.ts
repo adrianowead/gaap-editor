@@ -33,7 +33,32 @@ export class TextEditorComponent implements OnInit {
    * Atualizando elementos versionáveis já existentes ou criando novos
    */
   private _processLines(content: string): Array<any> {
-    const lines = content.split('\n');
+    content = content.trim();
+    let lines = content.split('\n');
+
+    lines = this._trimDoubleSpacesAndMultipleEmptyNewLines(lines);
+
+    return lines;
+  }
+
+  /**
+   * Remove espaços duplos e quebra de linha dupla e vazia
+   */
+  private _trimDoubleSpacesAndMultipleEmptyNewLines( lines: Array<string> ): Array<string> {
+    let beforeEmpty: Boolean = false;
+
+    lines.forEach((text, idx) => {
+      lines[idx] = text.trim().replace(/\s+/g, ' ');
+
+      if (text.length === 0 && (beforeEmpty || !lines[idx - 1])) {
+        delete lines[idx];
+        beforeEmpty = false;
+      } else {
+        beforeEmpty = text.length === 0;
+      }
+    });
+
+    lines =[...lines];
 
     return lines;
   }
