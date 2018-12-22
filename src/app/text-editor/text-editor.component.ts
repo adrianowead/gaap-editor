@@ -31,9 +31,14 @@ export class TextEditorComponent implements OnInit {
     this._linesText = [...lines];
     this._linesHtml = [...this._addTags(lines)];
 
+    this._caretPosition = this._getCaretCharacterOffsetWithin(this.divContent.nativeElement);
 
-    console.log('current element: ', this._getCaretPosition());
-    console.log('element ', this._getCaretCharacterOffsetWithin( this.divContent.nativeElement ));
+    this.divContent.nativeElement.innerHTML = this._linesHtml;
+
+    this._setCaretPosition(this.divContent.nativeElement, this._caretPosition);
+
+    // tslint:disable-next-line:max-line-length
+    console.log('current element: ', this._getCaretPosition(), 'element ', this._getCaretCharacterOffsetWithin(this.divContent.nativeElement));
   }
 
   /**
@@ -147,5 +152,16 @@ export class TextEditorComponent implements OnInit {
       return range.startOffset + rangeCount;
     }
     return -1;
+  }
+
+  private _setCaretPosition( element: any, position: any ) {
+    const el = element;
+    const range = document.createRange();
+    const sel = window.getSelection();
+
+    range.setStart(el, position);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
   }
 }
