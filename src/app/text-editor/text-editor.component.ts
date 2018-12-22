@@ -1,3 +1,4 @@
+import { DtoCaretPosition } from './../dto-caret-position';
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 
 @Component({
@@ -10,7 +11,7 @@ export class TextEditorComponent implements OnInit {
   public content: string;
   private _linesHtml: Array<string>;
   private _linesText: Array<string>;
-  private _caretPosition: Number = 0;
+  private _caretPosition: DtoCaretPosition;
 
   @ViewChild('divContent') divContent: ElementRef;
 
@@ -28,17 +29,14 @@ export class TextEditorComponent implements OnInit {
 
     lines = this._stripHtml(lines);
 
+    this._caretPosition = this._detectChange(this._linesText, lines);
+
     this._linesText = [...lines];
     this._linesHtml = [...this._addTags(lines)];
 
-    this._caretPosition = this._getCaretCharacterOffsetWithin(this.divContent.nativeElement);
-
     this.divContent.nativeElement.innerHTML = this._linesHtml;
 
-    this._setCaretPosition(this.divContent.nativeElement, this._caretPosition);
-
-    // tslint:disable-next-line:max-line-length
-    console.log('current element: ', this._getCaretPosition(), 'element ', this._getCaretCharacterOffsetWithin(this.divContent.nativeElement));
+    console.log( this._caretPosition );
   }
 
   /**
@@ -163,5 +161,30 @@ export class TextEditorComponent implements OnInit {
     range.collapse(true);
     sel.removeAllRanges();
     sel.addRange(range);
+  }
+
+  private _detectChange(lines1: Array<string>, lines2: Array<string> ): DtoCaretPosition {
+    const big: Array<string> = lines1 && lines1.length > lines2.length ? lines1 : lines2;
+    const small: Array<string> = lines1 && lines1.length > lines2.length ? lines2 : lines1;
+
+    const position = new DtoCaretPosition;
+
+    big.forEach((text, linePos) => {
+      if (small) {
+        if (text !== small[linePos]) {
+          const rev1 = text.split('').reverse();
+          const rev2 = small[linePos].split('').reverse();
+
+          rev1.forEach((t, columnPos) => {
+            if (t !== rev2[columnPos]) {
+              position.line = linePos;
+              position.column = columnPos;
+            }
+          });
+        }
+      }
+    });
+
+    return position;
   }
 }
