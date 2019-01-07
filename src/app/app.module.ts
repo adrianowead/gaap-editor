@@ -1,3 +1,4 @@
+import { TextEditorModule } from './text-editor/text-editor.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
@@ -30,7 +31,8 @@ const appRoutes = [
     ),
     BrowserModule,
     NgxElectronModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    TextEditorModule
   ],
   providers: [],
   bootstrap: [AppComponent]

@@ -1,5 +1,7 @@
+import { TextEditorFragmentComponent } from './../text-editor-fragment/text-editor-fragment.component';
 import { DtoCaretPosition } from './../dto-caret-position';
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { ViewContainerRef, ComponentFactoryResolver, Injector, ApplicationRef, EmbeddedViewRef } from '@angular/core';
 
 @Component({
   selector: 'app-text-editor',
@@ -9,15 +11,22 @@ import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 export class TextEditorComponent implements OnInit {
 
   public content: string;
-  private _linesHtml: Array<string>;
+  private _linesHtml: Array<any>;
   private _linesText: Array<string>;
   private _caretPosition: DtoCaretPosition;
+  private fragments: Array<TextEditorFragmentComponent>;
 
   @ViewChild('divContent') divContent: ElementRef;
+  @ViewChild('container', { read: ViewContainerRef }) container: ViewContainerRef;
 
-  constructor() { }
+  constructor(
+    private componentFactoryResolver: ComponentFactoryResolver,
+    private appRef: ApplicationRef,
+    private injector: Injector
+  ) { }
 
   ngOnInit() {
+    //
   }
 
   /**
@@ -25,18 +34,19 @@ export class TextEditorComponent implements OnInit {
    * @param event Recebe o evento nativo
    */
   public contentChange() {
+    this._caretPosition = this._getCaretPosition();
+
     let lines: Array<string> = this._processLines(this.divContent.nativeElement.innerText);
 
     lines = this._stripHtml(lines);
 
-    this._caretPosition = this._detectChange(this._linesText, lines);
-
     this._linesText = [...lines];
     this._linesHtml = [...this._addTags(lines)];
 
-    this.divContent.nativeElement.innerHTML = this._linesHtml;
-
-    console.log( this._caretPosition );
+    // melhorar essa implementação, pois diversas funções serão responsabilidades de cada fragmento
+    this._linesHtml.forEach((line) => {
+      this.addFragment(line.text);
+    });
   }
 
   /**
@@ -92,99 +102,41 @@ export class TextEditorComponent implements OnInit {
   /**
    * Adiciona tags necessárias para marcar os estilos
    */
-  private _addTags( lines: Array<string> ): Array<string> {
-    // paragrafos
+  private _addTags( lines: Array<string> ): Array<any> {
+    const linesEditor: Array<any> = [];
+
     lines.forEach((text, idx) => {
       if ( text.length > 0 ) {
-        lines[idx] = `<p>${text}<p>`;
+        linesEditor[idx] = {
+          text: text
+        };
       }
     });
 
-    return lines;
+    return linesEditor;
   }
 
-  private _getCaretCharacterOffsetWithin(element: { ownerDocument: any; document: any; }) {
-    let caretOffset = 0;
-    const doc = element.ownerDocument || element.document;
-    const win = doc.defaultView || doc.parentWindow;
-    let sel: { rangeCount: number; type: string; createRange: () => void; };
+  private _getCaretPosition(): DtoCaretPosition {
+    const selObj = window.getSelection();
+    const range = selObj.getRangeAt(0);
 
-    if (typeof win.getSelection !== 'undefined') {
-      sel = win.getSelection();
-
-      if (sel.rangeCount > 0) {
-        const range = win.getSelection().getRangeAt(0);
-        const preCaretRange = range.cloneRange();
-        preCaretRange.selectNodeContents(element);
-        preCaretRange.setEnd(range.endContainer, range.endOffset);
-        caretOffset = preCaretRange.toString().length;
-      }
-    } else if ((sel = doc.selection) && sel.type !== 'Control') {
-      const textRange = sel.createRange();
-      const preCaretTextRange = doc.body.createTextRange();
-      preCaretTextRange.moveToElementText(element);
-      preCaretTextRange.setEndPoint('EndToEnd', textRange);
-      caretOffset = preCaretTextRange.text.length;
-    }
-
-    return caretOffset;
+    return {
+      line: 0,
+      column: range.startOffset
+    };
   }
 
-  private _getCaretPosition() {
-    if (window.getSelection && window.getSelection().getRangeAt) {
-      const range = window.getSelection().getRangeAt(0);
-      const selectedObj = window.getSelection();
-      let rangeCount = 0;
-      const childNodes = selectedObj.anchorNode.parentNode.childNodes;
-
-      for (let i = 0; i < childNodes.length; i++) {
-        if (childNodes[i] === selectedObj.anchorNode) {
-          break;
-        }
-        if (childNodes[i].outerHTML) {
-          rangeCount += childNodes[i].outerHTML.length;
-        } else if (childNodes[i].nodeType === 3) {
-          rangeCount += childNodes[i].textContent.length;
-        }
-      }
-      return range.startOffset + rangeCount;
-    }
-    return -1;
+  public childFocus( index ) {
+    console.log('child', index);
   }
 
-  private _setCaretPosition( element: any, position: any ) {
-    const el = element;
-    const range = document.createRange();
-    const sel = window.getSelection();
+  private addFragment( conteudo: string ) {
+    const componentFactory = this.componentFactoryResolver.resolveComponentFactory(TextEditorFragmentComponent);
+    const componentRef = componentFactory.create(this.injector);
+    this.appRef.attachView(componentRef.hostView);
 
-    range.setStart(el, position);
-    range.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(range);
-  }
+    const domElem = (componentRef.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement;
 
-  private _detectChange(lines1: Array<string>, lines2: Array<string> ): DtoCaretPosition {
-    const big: Array<string> = lines1 && lines1.length > lines2.length ? lines1 : lines2;
-    const small: Array<string> = lines1 && lines1.length > lines2.length ? lines2 : lines1;
-
-    const position = new DtoCaretPosition;
-
-    big.forEach((text, linePos) => {
-      if (small) {
-        if (text !== small[linePos]) {
-          const rev1 = text.split('').reverse();
-          const rev2 = small[linePos].split('').reverse();
-
-          rev1.forEach((t, columnPos) => {
-            if (t !== rev2[columnPos]) {
-              position.line = linePos;
-              position.column = columnPos;
-            }
-          });
-        }
-      }
-    });
-
-    return position;
+    this.divContent.nativeElement.appendChild(domElem);
   }
 }
