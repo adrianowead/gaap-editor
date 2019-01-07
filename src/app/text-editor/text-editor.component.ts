@@ -1,7 +1,7 @@
 import { TextEditorFragmentComponent } from './../text-editor-fragment/text-editor-fragment.component';
 import { DtoCaretPosition } from './../dto-caret-position';
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { ViewContainerRef, ComponentFactoryResolver, Injector, ApplicationRef, EmbeddedViewRef } from '@angular/core';
+import { ViewContainerRef, ComponentFactoryResolver, Injector, ApplicationRef, EmbeddedViewRef, ComponentRef } from '@angular/core';
 
 @Component({
   selector: 'app-text-editor',
@@ -11,10 +11,8 @@ import { ViewContainerRef, ComponentFactoryResolver, Injector, ApplicationRef, E
 export class TextEditorComponent implements OnInit {
 
   public content: string;
-  private _linesHtml: Array<any>;
   private _linesText: Array<string>;
-  private _caretPosition: DtoCaretPosition;
-  private fragments: Array<TextEditorFragmentComponent>;
+  private _fragments: Array<any> = [];
 
   @ViewChild('divContent') divContent: ElementRef;
   @ViewChild('container', { read: ViewContainerRef }) container: ViewContainerRef;
@@ -29,23 +27,34 @@ export class TextEditorComponent implements OnInit {
     //
   }
 
+  onAfterViewChecked() {
+    // ao iniciar, já adicionar um fragmento, para não permitir que a div trabalhe puramente com o text
+    setTimeout(() => {
+      this.addFragment('a', 0);
+    }, 1000);
+  }
+
   /**
    * Ao modificar o conteúdo
    * @param event Recebe o evento nativo
    */
   public contentChange() {
-    this._caretPosition = this._getCaretPosition();
+    let linesHTML: Array<string> = this._processLines(this.divContent.nativeElement.innerHTML);
 
-    let lines: Array<string> = this._processLines(this.divContent.nativeElement.innerText);
+    // não processar fragmentos já existentes
+    // pois isso é responsabilidade do elemento
+    // nese nível é apenas feito o processamento global e de novos itens
 
-    lines = this._stripHtml(lines);
+    linesHTML = this._stripFragment(linesHTML);
+    linesHTML = this._stripHtml(linesHTML);
 
-    this._linesText = [...lines];
-    this._linesHtml = [...this._addTags(lines)];
+    console.log(linesHTML);
+
+    this._linesText = [...linesHTML];
 
     // melhorar essa implementação, pois diversas funções serão responsabilidades de cada fragmento
-    this._linesHtml.forEach((line) => {
-      this.addFragment(line.text);
+    this._linesText.forEach((line, idx) => {
+      this.addFragment(line, idx);
     });
   }
 
@@ -54,7 +63,7 @@ export class TextEditorComponent implements OnInit {
    * Atualizando elementos versionáveis já existentes ou criando novos
    */
   private _processLines(content: string): Array<any> {
-    content = content.trim();
+    // content = content.trim();
     let lines = content.split('\n');
 
     lines = this._trimDoubleSpacesAndMultipleEmptyNewLines(lines);
@@ -83,6 +92,19 @@ export class TextEditorComponent implements OnInit {
   }
 
   /**
+   * Elimina todos os elementos de fragmento já existentes
+   */
+  private _stripFragment(lines: Array<string>): Array<string> {
+    lines.forEach((text, idx) => {
+      lines[idx] = text.replace(/<\/?app-text-editor-fragment>/g, '');
+    });
+
+    lines = this._trimDoubleSpacesAndMultipleEmptyNewLines(lines);
+
+    return lines;
+  }
+
+  /**
    * Elimita todo o html e deixa apenas o texto puro
    */
   private _stripHtml( lines: Array<string> ): Array<string> {
@@ -99,23 +121,6 @@ export class TextEditorComponent implements OnInit {
     return lines;
   }
 
-  /**
-   * Adiciona tags necessárias para marcar os estilos
-   */
-  private _addTags( lines: Array<string> ): Array<any> {
-    const linesEditor: Array<any> = [];
-
-    lines.forEach((text, idx) => {
-      if ( text.length > 0 ) {
-        linesEditor[idx] = {
-          text: text
-        };
-      }
-    });
-
-    return linesEditor;
-  }
-
   private _getCaretPosition(): DtoCaretPosition {
     const selObj = window.getSelection();
     const range = selObj.getRangeAt(0);
@@ -126,16 +131,18 @@ export class TextEditorComponent implements OnInit {
     };
   }
 
-  public childFocus( index ) {
-    console.log('child', index);
-  }
-
-  private addFragment( conteudo: string ) {
+  private addFragment( conteudo: string, index: number ) {
     const componentFactory = this.componentFactoryResolver.resolveComponentFactory(TextEditorFragmentComponent);
     const componentRef = componentFactory.create(this.injector);
+    componentRef.instance.conteudo = conteudo;
     this.appRef.attachView(componentRef.hostView);
 
     const domElem = (componentRef.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement;
+
+    console.log(index);
+
+    this._fragments[index] = componentRef;
+    this.divContent.nativeElement.innerHTML = '';
 
     this.divContent.nativeElement.appendChild(domElem);
   }
