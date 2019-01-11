@@ -1,7 +1,7 @@
 import { TextEditorFragmentComponent } from './../text-editor-fragment/text-editor-fragment.component';
 import { DtoCaretPosition } from './../dto-caret-position';
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { ViewContainerRef, ComponentFactoryResolver, Injector, ApplicationRef, EmbeddedViewRef, ComponentRef } from '@angular/core';
+import { ViewContainerRef, ComponentFactoryResolver, Injector, ApplicationRef, EmbeddedViewRef } from '@angular/core';
 
 @Component({
   selector: 'app-text-editor',
@@ -24,14 +24,13 @@ export class TextEditorComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    //
-  }
-
-  onAfterViewChecked() {
     // ao iniciar, já adicionar um fragmento, para não permitir que a div trabalhe puramente com o text
     setTimeout(() => {
-      this.addFragment('a', 0);
-    }, 1000);
+      this.addFragment('g', 0);
+      this.addFragment('a', 1);
+      this.addFragment('a', 2);
+      this.addFragment('p', 3);
+    }, 100);
   }
 
   /**
@@ -139,10 +138,11 @@ export class TextEditorComponent implements OnInit {
 
     const domElem = (componentRef.hostView as EmbeddedViewRef<any>).rootNodes[0] as HTMLElement;
 
-    console.log(index);
-
     this._fragments[index] = componentRef;
-    this.divContent.nativeElement.innerHTML = '';
+
+    if ( index === 0 ) {
+      this.divContent.nativeElement.innerHTML = '';
+    }
 
     this.divContent.nativeElement.appendChild(domElem);
   }
