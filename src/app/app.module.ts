@@ -1,3 +1,4 @@
+import { TimelineModule } from './timeline/timeline.module';
 import { TextEditorModule } from './text-editor/text-editor.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
@@ -10,11 +11,14 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HomeComponent } from './home/home.component';
 import { SplashScreenComponent } from './splash-screen/splash-screen.component';
 import { TextEditorComponent } from './text-editor/text-editor.component';
+import { TimelineComponent } from './timeline/timeline.component';
+import { TextFragmentComponent } from './text-fragment/text-fragment.component';
 
 const appRoutes = [
   { path: 'splash', component: SplashScreenComponent },
   { path: 'home', component: HomeComponent },
-  { path: 'text-editor', component: TextEditorComponent }
+  { path: 'text-editor', component: TextEditorComponent },
+  { path: 'timeline', component: TimelineComponent }
 ];
 
 @NgModule({
@@ -22,7 +26,9 @@ const appRoutes = [
     AppComponent,
     HomeComponent,
     SplashScreenComponent,
-    TextEditorComponent
+    TextEditorComponent,
+    TimelineComponent,
+    TextFragmentComponent
   ],
   imports: [
     RouterModule.forRoot(
@@ -32,7 +38,8 @@ const appRoutes = [
     BrowserModule,
     NgxElectronModule,
     BrowserAnimationsModule,
-    TextEditorModule
+    TextEditorModule,
+    TimelineModule
   ],
   providers: [],
   bootstrap: [AppComponent]

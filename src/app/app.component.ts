@@ -12,7 +12,7 @@ export class AppComponent {
     private _router: Router
   ) {
     // this._router.navigateByUrl('/splash');
-    this._router.navigateByUrl('/text-editor');
+    this._router.navigateByUrl('/timeline');
 
     // timeout temporário
     // @TODO: Futuramente trocar para um processo de checagem de ambiente, arquivos recentes e dependências

@@ -1,0 +1,16 @@
+.timeline{
+    padding: 0;
+    margin: 0;
+    width: 100vw;
+    overflow-x: hidden;
+
+    > .horizontal{
+        border: 1px solid cyan;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+
+        display: flex;
+        justify-content: space-between;
+    }
+}
